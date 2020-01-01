@@ -3,7 +3,10 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  APPID: 'c8dac7889e1fe78563429280cdeb6512',
+  BASE_URL: 'http://api.openweathermap.org',
+  STATIC_DB_URL: 'http://localhost:3000'
 };
 
 /*
