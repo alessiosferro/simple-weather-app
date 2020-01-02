@@ -4,12 +4,14 @@ import {
   MatInputModule,
   MatFormFieldModule,
   MatAutocompleteModule,
+  MatProgressBarModule,
 } from '@angular/material';
 
 const materialModules = [
   MatInputModule,
   MatFormFieldModule,
   MatAutocompleteModule,
+  MatProgressBarModule
 ];
 
 @NgModule({

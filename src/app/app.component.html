@@ -1,46 +1,94 @@
-<header>
-  <h1>Simple Weather App</h1>
-</header>
 <main fxLayout="column" fxLayoutAlign="flex-start center">
-  <mat-form-field>
-    <ng-container [formGroup]="city">
-      <input
-        [formControl]="city.get('name')"
-        matInput
-        placeholder="City"
-        [matAutocomplete]="auto"
-      />
-    </ng-container>
-    <mat-hint>Insert a city name</mat-hint>
-    <mat-error *ngIf="city.get('name').hasError('required')"
-      >Field is required</mat-error
-    >
-    <mat-error *ngIf="city.get('name').hasError('minlength')"
-      >At least 3 characters long</mat-error
-    >
-  </mat-form-field>
+  <div class="app">
+    <header>
+      <h1>Simple Weather App</h1>
+    </header>
 
-  <mat-autocomplete #auto="matAutocomplete">
-    <mat-optgroup
-      *ngFor="let country of countries$ | async"
-      [label]="country.code"
-    >
-      <mat-option
-        *ngFor="let city of country.cities"
-        [value]="city.name"
-        (onSelectionChange)="onSelectionChange(city.id)"
+    <mat-form-field>
+      <ng-container [formGroup]="city">
+        <input
+          [formControl]="city.get('name')"
+          matInput
+          placeholder="City"
+          [matAutocomplete]="auto"
+        />
+      </ng-container>
+      <mat-hint>Insert a city name</mat-hint>
+      <mat-error *ngIf="city.get('name').hasError('required')"
+        >Field is required</mat-error
       >
-        {{ city.name }}
-      </mat-option>
-    </mat-optgroup>
-  </mat-autocomplete>
+      <mat-error *ngIf="city.get('name').hasError('minlength')"
+        >At least 3 characters long</mat-error
+      >
+    </mat-form-field>
 
-  <div *ngIf="weather$ | async as w">
-    <div *ngFor="let weather of w.weather">
-      {{ weather.main }}<br/>
-      {{ weather.description | titlecase }}
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-optgroup
+        *ngFor="let country of countries$ | async"
+        [label]="country.code"
+      >
+        <mat-option
+          *ngFor="let city of country.cities"
+          [value]="city.name"
+          (onSelectionChange)="onSelectionChange(city.id)"
+        >
+          {{ city.name }}
+        </mat-option>
+      </mat-optgroup>
+    </mat-autocomplete>
+
+    <mat-progress-bar mode="indeterminate" *ngIf="loadingService.loading$ | async">Loading...</mat-progress-bar>
+
+    <div
+      [hidden]="loadingService.loading$ | async"
+      class="weather-results"
+      *ngIf="weather$ | async as w"
+    >
+      <ng-container *ngFor="let weather of w.weather">
+        <div class="row">
+          <span class="row__label">Weather</span>
+          <span>{{ weather.main }}</span>
+        </div>
+        <div class="row">
+          <span class="row__label">Description</span>
+          <span>{{ weather.description | titlecase }}</span>
+        </div>
+      </ng-container>
+
+      <div class="row">
+        <span class="row__label">Temp</span>
+        <span>{{ w.main.temp }}°</span>
+      </div>
+
+      <div class="row">
+        <span class="row__label">Feels like</span>
+        <span>{{ w.main.feels_like }}°</span>
+      </div>
+
+      <div class="row">
+        <span class="row__label">Min</span>
+        <span>{{ w.main.temp_min }}°</span>
+      </div>
+
+      <div class="row">
+        <span class="row__label">Max</span>
+        <span>{{ w.main.temp_max }}°</span>
+      </div>
+
+      <div class="row">
+        <span class="row__label">Wind speed</span>
+        <span>{{ w.wind.speed }} m/s</span>
+      </div>
+
+      <div class="row">
+        <span class="row__label">Lat</span>
+        <span>{{ w.coord.lat }}</span>
+      </div>
+
+      <div class="row">
+        <span class="row__label">Long</span>
+        <span>{{ w.coord.lon }}</span>
+      </div>
     </div>
-
-    Temperatura: {{ w.main.temp }}°
   </div>
 </main>

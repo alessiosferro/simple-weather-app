@@ -1,3 +1,4 @@
+import { LoadingService } from './services/loading.service';
 import { City } from './models/city.interface';
 import { StaticDataService } from "./services/static-data.service";
 import { WeatherService } from "./services/weather.service";
@@ -35,6 +36,7 @@ export class AppComponent implements OnInit, OnDestroy {
   weather$ = new Observable<WeatherAPIResponse>();
 
   constructor(
+    public loadingService: LoadingService,
     private weatherService: WeatherService,
     private staticDataService: StaticDataService,
   ) {}
