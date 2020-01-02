@@ -1,11 +1,10 @@
+import { City } from './models/city.interface';
 import { StaticDataService } from "./services/static-data.service";
-import { City } from "./models/city.interface";
 import { WeatherService } from "./services/weather.service";
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import {
   FormControl,
   FormGroup,
-  FormBuilder,
   Validators
 } from "@angular/forms";
 import {
@@ -17,9 +16,10 @@ import {
   map,
   tap
 } from "rxjs/operators";
-import { Observable, Subject, BehaviorSubject } from "rxjs";
-import { WeatherAPIResponse } from "./models/weather-api-response.interface";
+import { Observable, Subject } from "rxjs";
+import { MatAutocompleteSelectedEvent } from '@angular/material';
 import { EventEmitter } from 'protractor';
+import { WeatherAPIResponse } from './models/weather-api-response.interface';
 
 @Component({
   selector: "app-root",
@@ -27,39 +27,59 @@ import { EventEmitter } from 'protractor';
   styleUrls: ["./app.component.scss"]
 })
 export class AppComponent implements OnInit, OnDestroy {
-  form: FormGroup;
+  city: FormGroup;
   unsubscribe$: Subject<void>;
-  city$: Observable<WeatherAPIResponse>;
+  countries$: Observable<any>;
   submitted$ = new Subject();
+  getWeather$ = new Subject<number>();
+  weather$ = new Observable<WeatherAPIResponse>();
 
   constructor(
     private weatherService: WeatherService,
     private staticDataService: StaticDataService,
-    private formBuilder: FormBuilder
   ) {}
 
   ngOnInit() {
-    this.form = this.formBuilder.group({
-      city: ["", [Validators.required, Validators.minLength(3)]]
+    this.city = new FormGroup({
+      id: new FormControl(null),
+      name: new FormControl('', [Validators.required, Validators.minLength(3)])
     });
 
     this.unsubscribe$ = new Subject<void>();
 
-    this.city$ = this.submitted$.pipe(
-      filter(() => this.form.valid),
-      switchMap(city => this.staticDataService.getCitiesByName(this.form.value.city)),
-      map(cities =>
-        cities
-          .filter(city => city.country === "IT")
-          .slice(1, 10)
-          .map(city => city.id)
-          .shift()
-      ),
-      filter(id => !!id),
-      switchMap(locationId =>
-        this.weatherService.getWeatherByLocationId(locationId)
-      ),
+    this.countries$ = this.city.get('name').valueChanges.pipe(
+      distinctUntilChanged(),
+      debounceTime(300),
+      filter(() => this.city.valid),
+      switchMap(name => this.staticDataService.getCitiesByName(name)),
+      map(cities => {
+        let countryCities = {};
+        
+        for(const city of cities) {
+          let property = `${city.country}_cities`;
+
+          if(!countryCities[property]) {
+            countryCities[property] = {
+              code: city.country,
+              cities: [city]
+            }
+          }
+
+          else if(
+            !countryCities[property].cities.filter((c: City) => c.name === city.name).length
+          ) {
+            countryCities[property].cities.push(city)
+          }
+        }
+        
+        return Object.values(countryCities);
+      }),
       tap(console.log),
+      takeUntil(this.unsubscribe$)
+    );
+
+    this.weather$ = this.getWeather$.pipe(
+      switchMap((id) => this.weatherService.getWeatherByLocationId(id)),
       takeUntil(this.unsubscribe$)
     );
   }
@@ -67,5 +87,9 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+  }
+
+  onSelectionChange(cityId: number) {
+    this.getWeather$.next(cityId);
   }
 }

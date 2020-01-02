@@ -2,19 +2,45 @@
   <h1>Simple Weather App</h1>
 </header>
 <main fxLayout="column" fxLayoutAlign="flex-start center">
-  <form (ngSubmit)="submitted$.next()" [formGroup]="form">
-    <mat-form-field>
-      <input formControlName="city" matInput placeholder="City" />
-      <mat-hint>Insert a city name</mat-hint>
-      <mat-error *ngIf="form.get('city').hasError('required')">Field is required</mat-error>
-      <mat-error *ngIf="form.get('city').hasError('minlength')">At least 3 characters long</mat-error>
-    </mat-form-field>
-  </form>
+  <mat-form-field>
+    <ng-container [formGroup]="city">
+      <input
+        [formControl]="city.get('name')"
+        matInput
+        placeholder="City"
+        [matAutocomplete]="auto"
+      />
+    </ng-container>
+    <mat-hint>Insert a city name</mat-hint>
+    <mat-error *ngIf="city.get('name').hasError('required')"
+      >Field is required</mat-error
+    >
+    <mat-error *ngIf="city.get('name').hasError('minlength')"
+      >At least 3 characters long</mat-error
+    >
+  </mat-form-field>
 
-  <div *ngIf="city$ | async as city">
-    <div *ngFor="let weather of city.weather">
-      <p>{{ weather.main }}</p>
-      <p>{{ weather.description | titlecase }}</p>
+  <mat-autocomplete #auto="matAutocomplete">
+    <mat-optgroup
+      *ngFor="let country of countries$ | async"
+      [label]="country.code"
+    >
+      <mat-option
+        *ngFor="let city of country.cities"
+        [value]="city.name"
+        (onSelectionChange)="onSelectionChange(city.id)"
+      >
+        {{ city.name }}
+      </mat-option>
+    </mat-optgroup>
+  </mat-autocomplete>
+
+  <div *ngIf="weather$ | async as w">
+    <div *ngFor="let weather of w.weather">
+      {{ weather.main }}<br/>
+      {{ weather.description | titlecase }}
     </div>
+
+    Temperatura: {{ w.main.temp }}°
   </div>
 </main>
