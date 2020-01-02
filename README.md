@@ -3,7 +3,7 @@
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.0.6.
 
 ## Local Cities Json Server
-Run `json-server --watch db.json" in order to run the local json database.
+Run `json-server --watch db.json` in order to run the local json database.
 
 ## Development server
 
